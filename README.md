@@ -5,7 +5,8 @@ Double-click `start.command` for the browser interface, or open
 
 ## Download
 
-Get the latest build from the [Releases page](../../releases/latest):
+Get the latest build from the [Releases page](../../releases/latest). Windows install steps (in Thai) are in
+[README-Windows.md](README-Windows.md).
 
 - **LocalConverter-Setup.exe**: Windows installer. It needs no admin rights and installs to your user profile.
 - **LocalConverter-Portable.exe**: a single Windows exe you can run without installing.

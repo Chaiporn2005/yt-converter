@@ -137,7 +137,8 @@ def vocal_command():
 
 
 VOCAL_SETUP_HINT = (
-    "Cut vocal needs the vocal remover. Install Python 3.12, run: pip install demucs==4.0.1 soundfile, then restart Local Converter."
+    "Cut vocal needs the vocal remover. Follow the Cut vocal steps in README-Windows.md "
+    "(github.com/Chaiporn2005/yt-converter), then restart Local Converter."
     if WINDOWS else
     "Vocal remover needs setup. Double-click setup-vocals.command in the yt-converter folder, then try again.")
 
