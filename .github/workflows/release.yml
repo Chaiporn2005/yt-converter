@@ -1,0 +1,70 @@
+name: Build and release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build setup and portable exe
+        shell: pwsh
+        run: .\windows\build.ps1 -Version "${{ github.ref_type == 'tag' && github.ref_name || '0.0.0' }}"
+      - name: Smoke test both builds
+        shell: pwsh
+        run: |
+          foreach ($exe in "build\dist\LocalConverter\LocalConverter.exe", "build\LocalConverter-Portable.exe") {
+            $proc = Start-Process $exe -PassThru
+            $page = $null
+            foreach ($i in 1..30) {
+              Start-Sleep 2
+              try { $page = Invoke-WebRequest http://127.0.0.1:8765/ -UseBasicParsing; break } catch {}
+            }
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            Get-Process LocalConverter* -ErrorAction SilentlyContinue | Stop-Process -Force
+            if (-not $page -or $page.Content -notmatch "<html") { throw "$exe did not serve the app" }
+            Write-Host "$exe OK"
+            Start-Sleep 2
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: build/LocalConverter-*.exe
+
+  mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: python3 -m unittest discover -s . -v
+      - name: Build app
+        run: |
+          mac/build.sh
+          cd dist && ditto -c -k --keepParent "Local Converter.app" LocalConverter-mac.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac
+          path: dist/LocalConverter-mac.zip
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: [windows, mac]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          generate_release_notes: true

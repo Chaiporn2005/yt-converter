@@ -1,0 +1,7 @@
+# Keep the matching audio backend that Demucs 4 supports.
+demucs==4.0.1
+torch==2.5.1
+torchaudio==2.5.1
+numpy<2
+
+soundfile==0.13.1
